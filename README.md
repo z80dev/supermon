@@ -100,3 +100,35 @@ impl Consumer for ListenerLogger {
     }
 }
 ```
+
+### Bringing It All Together
+
+The `Executor` struct handles starting the execution of your watchers, middleware, and consumers. You interact with it through these functions:
+
+- `new`: Create a new executor object, no arguments
+- `add_watcher`: expects a `Box`ed instance of a struct implementing `Watcher`
+- `add_middleware`: expects a `Box`ed instance of a struct implementing `Middleware`
+- `add_consumer`: expects a `Box`ed instance of a struct implementing `Consumer`
+- `start`: kicks off execution of all added watchers, middleware, and executors
+
+``` rust
+// main.rs
+use supermon::{Executor}
+
+// ... add struct definitions from examples above
+
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let mut executor = Executor::new();
+    executor.add_watcher(
+        Box::new(SuperWatcher{ addr_to_watch: "0x0000....." })
+    );
+    executor.set_listener(
+        Box::new(ListenerLogger{})
+    );
+    executor.start().await;
+    Ok(())
+}
+
+```
