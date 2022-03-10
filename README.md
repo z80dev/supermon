@@ -4,6 +4,18 @@ A tool for scheduling watchers and feeding their results through middleware to a
 Supermon lets you write standalone units of computation (workers) and handles wiring the communication between them.
 It uses channels to communicate messages between these different units.
 
+## Installation
+
+Add the following dependencies to your `Cargo.toml`
+
+``` rust
+[dependencies]
+supermon = { git = "https://github.com/z80dev/supermon" }
+async-trait = "0.1.52"
+```
+
+you will need `async-trait` for when you implement the `Watcher`, `Middleware`, and `Consumer` traits.
+
 ## How It Works
 
 There are three different types of workers currently supported
