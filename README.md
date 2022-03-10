@@ -53,4 +53,50 @@ impl Watcher for MulticallZapperWatcher {
 
 ### Middleware
 
+``` rust
+use async_trait::async_trait;
+use tokio::sync::mpsc::{Receiver, Sender};
+
+#[async_trait]
+pub trait Middleware {
+    type Payload;
+    async fn process(&self, sx: Sender<Self::Payload>, rx: Receiver<Self::Payload>);
+}
+```
+
+The `Middleware` trait has only one function that must be implemented, `process`. This async function should listen for message from `rx`, perform any necessary processing or filtering, and pass messages along to `sx`.
+
+This can be used to implement deduplication of messages.
+
 ### Consumer
+
+``` rust
+use async_trait::async_trait;
+use tokio::sync::mpsc::Receiver;
+
+#[async_trait]
+pub trait Consumer {
+    type Payload;
+    async fn consume(&self, mut rx: Receiver<Self::Payload>);
+}
+
+```
+
+The `Consumer` trait has only one function that must be implemented, `consume`. This async function should listen for messages on `rx` and perform any necessary actions.
+
+For example, a consumer that logs any messages it receives:
+
+``` rust
+pub struct ListenerLogger{}
+
+#[async_trait]
+impl Consumer for ListenerLogger {
+    type Payload = String;
+    async fn consume(&self, mut rx: Receiver<Self::Payload>) {
+        println!("Starting listener");
+        while let Some(addr) = rx.recv().await {
+            println!("Received address {} in message", addr);
+        }
+    }
+}
+```
