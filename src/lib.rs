@@ -1,12 +1,12 @@
-mod executor;
 mod consumer;
-mod watcher;
+mod executor;
 mod middleware;
+mod watcher;
 
-pub use executor::Executor;
 pub use consumer::Consumer;
-pub use watcher::Watcher;
+pub use executor::Executor;
 pub use middleware::Middleware;
+pub use watcher::Watcher;
 
 #[cfg(test)]
 mod tests {
