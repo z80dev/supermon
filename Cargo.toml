@@ -2,6 +2,11 @@
 name = "supermon"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "A set of utilities for coordinating watchers, middleware, and consumers via channels"
+repository = "https://github.com/z80dev/supermon"
+readme = "README.md"
+homepage = "https://github.com/z80dev/supermon"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
