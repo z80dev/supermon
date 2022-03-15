@@ -8,6 +8,7 @@ use tokio::sync::broadcast;
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 
+#[derive(Default)]
 pub struct Executor<T: Send + Sync + Clone + Copy + Debug + 'static> {
     watchers: Vec<Box<dyn Watcher<Payload = T> + Send + Sync>>,
     middlewares: Vec<Box<dyn Middleware<Payload = T> + Send + Sync>>,
@@ -17,15 +18,10 @@ pub struct Executor<T: Send + Sync + Clone + Copy + Debug + 'static> {
 
 impl<T> Executor<T>
 where
-    T: Send + Sync + Clone + Debug + Copy + 'static,
+    T: Send + Sync + Clone + Debug + Copy + Default + 'static,
 {
     pub fn new() -> Executor<T> {
-        return Executor {
-            watchers: vec![],
-            middlewares: vec![],
-            consumer: None,
-            consumers: vec![],
-        };
+        Default::default()
     }
 
     pub fn add_watcher(&mut self, w: Box<dyn Watcher<Payload = T> + Send + Sync>) {
@@ -48,7 +44,10 @@ where
         start_watchers(&mut self.watchers, sx)
     }
 
-    fn start_middlewares(&mut self, rx: mpsc::Receiver<T>) -> (Vec<JoinHandle<()>>, mpsc::Receiver<T>) {
+    fn start_middlewares(
+        &mut self,
+        rx: mpsc::Receiver<T>,
+    ) -> (Vec<JoinHandle<()>>, mpsc::Receiver<T>) {
         start_middlewares(&mut self.middlewares, rx)
     }
 
@@ -70,13 +69,11 @@ where
 
         if !self.consumers.is_empty() {
             handles.append(&mut self.start_consumers(watchers_receiver));
-        } else {
-            if let Some(l) = self.consumer {
-                let listener = tokio::spawn(async move {
-                    l.consume(watchers_receiver).await;
-                });
-                listener.await?;
-            }
+        } else if let Some(l) = self.consumer {
+            let listener = tokio::spawn(async move {
+                l.consume(watchers_receiver).await;
+            });
+            listener.await?;
         }
 
         for handle in handles {
